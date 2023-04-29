@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include"calcfuncs.h"
+#include"ipdata.h"
 
 void iptype(int octet)
 {
@@ -10,107 +11,116 @@ void iptype(int octet)
 		printf("IP является частным.\n");
 	else
 		printf("IP является публиным.\n");
-
 }
-
 
 int *networkaddress(int BinaryIPFirstOctet[], int BinaryIPSecondOctet[], int BinaryIPThirdOctet[], int BinaryIPFourthOctet[], int BinaryMaskFirstOctet[], int BinaryMaskSecondOctet[], int BinaryMaskThirdOctet[], int BinaryMaskFourthOctet[])
 {
-    //Переменные для обозначения размеров двоичной октеты и числа октет
-    const int BinaryOctetSize = 8, OctetNumber = 4;
-
+    //Переменная структуры с двоиным представлением адресов и масок
+    BinData bin;
+    //Переменная структуры с десятичным представлением адресов и масок
+    DecData dec;
+    //Присваиваем полю структуры значение
+    bin.BinaryOctetSize = 8;
     //Переменныые-счётчики
     int counter = 0, SecondCounter = 0;
-
-    //Массивы для хранения содержимого октет сетевого адреса в двоичном виде
-    int BinaryNetworkAddressFirstOctet[BinaryOctetSize], BinaryNetworkAddressSecondOctet[BinaryOctetSize], BinaryNetworkAddressThirdOctet[BinaryOctetSize], BinaryNetworkAddressFourthOctet[BinaryOctetSize];
-
-    //Массив для хранения сетевого адреса в десятичном виде
-    static int NetworkDecimalIP[4];
-
     //Циклы для заполнения октет сетевого адреса результатами операции-конъюнкции между IP и маской сети
-    for(counter = 0; counter < BinaryOctetSize; ++counter)
-        BinaryNetworkAddressFirstOctet[counter] = BinaryIPFirstOctet[counter] && BinaryMaskFirstOctet[counter];
-    for(counter = 0; counter < BinaryOctetSize; ++counter)
-        BinaryNetworkAddressSecondOctet[counter] = BinaryIPSecondOctet[counter] && BinaryMaskSecondOctet[counter];
-    for(counter = 0; counter < BinaryOctetSize; ++counter)
-        BinaryNetworkAddressThirdOctet[counter] = BinaryIPThirdOctet[counter] && BinaryMaskThirdOctet[counter];
-    for(counter = 0; counter < BinaryOctetSize; ++counter)
-        BinaryNetworkAddressFourthOctet[counter] = BinaryIPFourthOctet[counter] && BinaryMaskFourthOctet[counter];
-
+    for(counter = 0; counter < bin.BinaryOctetSize; ++counter)
+        bin.BinaryNetworkAddressFirstOctet[counter] = BinaryIPFirstOctet[counter] && BinaryMaskFirstOctet[counter];
+    for(counter = 0; counter < bin.BinaryOctetSize; ++counter)
+        bin.BinaryNetworkAddressSecondOctet[counter] = BinaryIPSecondOctet[counter] && BinaryMaskSecondOctet[counter];
+    for(counter = 0; counter < bin.BinaryOctetSize; ++counter)
+        bin.BinaryNetworkAddressThirdOctet[counter] = BinaryIPThirdOctet[counter] && BinaryMaskThirdOctet[counter];
+    for(counter = 0; counter < bin.BinaryOctetSize; ++counter)
+        bin.BinaryNetworkAddressFourthOctet[counter] = BinaryIPFourthOctet[counter] && BinaryMaskFourthOctet[counter];
     //Заполнение массива адреса сети результатами преобразования вида двоичного сетевого адреса в десятичный вид
-    NetworkDecimalIP[0] = bintodec(BinaryNetworkAddressFirstOctet);
-    NetworkDecimalIP[1] = bintodec(BinaryNetworkAddressSecondOctet);
-    NetworkDecimalIP[2] = bintodec(BinaryNetworkAddressThirdOctet);
-    NetworkDecimalIP[3] = bintodec(BinaryNetworkAddressFourthOctet);
-
+    NetworkDecimalIP[0] = bintodec(bin.BinaryNetworkAddressFirstOctet);
+    NetworkDecimalIP[1] = bintodec(bin.BinaryNetworkAddressSecondOctet);
+    NetworkDecimalIP[2] = bintodec(bin.BinaryNetworkAddressThirdOctet);
+    NetworkDecimalIP[3] = bintodec(bin.BinaryNetworkAddressFourthOctet);
+    //Возвращаем значение
     return NetworkDecimalIP;
-
 }
 
 void networkbelong(int DecimalNetworkIP[])
 {
-
-    //Переменные для обозначения числа октет
-    const int OctetNumber = 4;
-
+    //Переменная структуры
+    DecData dec;
+    //Присваиваем полю структуры значение
+    dec.OctetNumber = 4;
     //Переменные-счётчики
     int counter = 0, checks = 0;
-
     //Массивы с сетевыми адресами 
-    int Network_1[4] = {192, 168, 10, 0}, Network_2[4] = {192, 168, 160, 0}, Network_3[4] = {141, 127, 0, 0}, Network_4[4] = {192, 0, 172, 0};
+    dec.Network_1[0] = 192;
+    dec.Network_1[1] =  168;
+    dec.Network_1[2] = 10;
+    dec.Network_1[3] =  0;
+
+    dec.Network_2[0] = 192;
+    dec.Network_2[1] = 168;
+    dec.Network_2[2] =  160;
+    dec.Network_2[3] = 0;
+
+    dec.Network_3[0] = 141;
+    dec.Network_3[1] = 127;
+    dec.Network_3[2] = 0;
+    dec.Network_3[3] = 0;
+
+    dec.Network_4[0] = 192;
+    dec.Network_4[1] = 0;
+    dec.Network_4[2] = 172;
+    dec.Network_4[3] = 0;
 
     //Циклы для проверки на принадлежность к одной из сети
-    for(counter = 0; counter < OctetNumber; ++counter)
+    for(counter = 0; counter < dec.OctetNumber; ++counter)
     {
-        if(DecimalNetworkIP[counter] != Network_1[counter])
+        if(DecimalNetworkIP[counter] != dec.Network_1[counter])
         {
-            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_1[0], Network_1[1], Network_1[2], Network_1[3]);
+            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_1[0], dec.Network_1[1], dec.Network_1[2], dec.Network_1[3]);
             break;
         }else
             ++checks;
     }
     if(checks == 4)
-        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_1[0], Network_1[1], Network_1[2], Network_1[3]);
+        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_1[0], dec.Network_1[1], dec.Network_1[2], dec.Network_1[3]);
 
     checks = 0;
-    for(counter = 0; counter < OctetNumber; ++counter)
+    for(counter = 0; counter < dec.OctetNumber; ++counter)
     {
-        if(DecimalNetworkIP[counter] != Network_2[counter])
+        if(DecimalNetworkIP[counter] != dec.Network_2[counter])
         {
-            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_2[0], Network_2[1], Network_2[2], Network_2[3]);
+            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_2[0], dec.Network_2[1], dec.Network_2[2], dec.Network_2[3]);
             break;
         }else
             ++checks;
     }
     if(checks == 4)
-        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_2[0], Network_2[1], Network_2[2], Network_2[3]);
+        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_2[0], dec.Network_2[1], dec.Network_2[2], dec.Network_2[3]);
 
     checks = 0;
-    for(counter = 0; counter < OctetNumber; ++counter)
+    for(counter = 0; counter < dec.OctetNumber; ++counter)
     {
-        if(DecimalNetworkIP[counter] != Network_3[counter])
+        if(DecimalNetworkIP[counter] != dec.Network_3[counter])
         {
-            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_3[0], Network_3[1], Network_3[2], Network_3[3]);
+            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_3[0], dec.Network_3[1], dec.Network_3[2], dec.Network_3[3]);
             break;
         }else
             ++checks;
     }
     if(checks == 4)
-        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_3[0], Network_3[1], Network_3[2], Network_3[3]);
+        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_3[0], dec.Network_3[1], dec.Network_3[2], dec.Network_3[3]);
 
     checks = 0;
-    for(counter = 0; counter < OctetNumber; ++counter)
+    for(counter = 0; counter < dec.OctetNumber; ++counter)
     {
-        if(DecimalNetworkIP[counter] != Network_4[counter])
+        if(DecimalNetworkIP[counter] != dec.Network_4[counter])
         {
-            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_4[0], Network_4[1], Network_4[2], Network_4[3]);
+            printf("%d.%d.%d.%d не относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_4[0], dec.Network_4[1], dec.Network_4[2], dec.Network_4[3]);
             break;
         }else
             ++checks;
     }
     if(checks == 4)
-        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], Network_4[0], Network_4[1], Network_4[2], Network_4[3]);
+        printf("%d.%d.%d.%d относится к сети %d.%d.%d.%d\n", DecimalNetworkIP[0], DecimalNetworkIP[1], DecimalNetworkIP[2], DecimalNetworkIP[3], dec.Network_4[0], dec.Network_4[1], dec.Network_4[2], dec.Network_4[3]);
 
 }
 
@@ -119,5 +129,4 @@ void broadcastaddr(int octet)
     //Проверка на широковещательный адрес
     if(octet == 255)
         printf("Адрес является широковещательным.\n");
-
 }
